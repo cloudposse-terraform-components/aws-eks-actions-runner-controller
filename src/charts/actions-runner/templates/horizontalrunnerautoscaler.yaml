@@ -1,0 +1,62 @@
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: HorizontalRunnerAutoscaler
+metadata:
+  name: {{ .Values.release_name }}
+spec:
+  # Runners in the targeted RunnerDeployment won't be scaled down
+  # for 5 minutes instead of the default 10 minutes now
+  scaleDownDelaySecondsAfterScaleOut: {{ .Values.scale_down_delay_seconds }}
+  scaleTargetRef:
+    name: {{ .Values.release_name }}
+  minReplicas: {{ .Values.min_replicas }}
+  maxReplicas: {{ .Values.max_replicas }}
+  {{- with .Values.scheduled_overrides }}
+  scheduledOverrides:
+    {{- range . }}
+    - startTime: "{{ .start_time }}"
+      endTime: "{{ .end_time }}"
+      {{- with .recurrence_rule }}
+      recurrenceRule:
+        frequency: {{ .frequency }}
+        {{- if .until_time }}
+        untilTime: "{{ .until_time }}"
+        {{- end }}
+      {{- end }}
+      {{- with .min_replicas }}
+      minReplicas: {{ . }}
+      {{- end }}
+      {{- with .max_replicas }}
+      maxReplicas: {{ . }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+
+  {{- if .Values.pull_driven_scaling_enabled }}
+  metrics:
+    - type: PercentageRunnersBusy
+      scaleUpThreshold: {{ .Values.scale_up_threshold | quote }}
+      scaleDownThreshold: {{ .Values.scale_down_threshold | quote }}
+      {{- if .Values.scale_up_factor }}
+      scaleUpFactor: {{ .Values.scale_up_factor | quote }}
+      {{- else }}
+      scaleUpAdjustment: {{ .Values.scale_up_adjustment | quote }}
+      {{- end }}
+      {{- if .Values.scale_down_factor }}
+      scaleDownFactor: {{ .Values.scale_down_factor | quote }}
+      {{- else }}
+      scaleUpAdjustment: {{ .Values.scale_down_adjustment | quote }}
+      {{- end }}
+  {{- end }}
+  {{- if .Values.webhook_driven_scaling_enabled }}
+  scaleUpTriggers:
+  - githubEvent:
+      workflowJob: {}
+    amount: 1
+    {{- if .Values.max_duration }}
+    duration: "{{ .Values.max_duration }}"
+    {{- end }}
+  {{- end }}
+  {{- if .Values.scheduled_overrides }}
+  scheduledOverrides:
+  {{- with $.Values.scheduled_overrides }}{{ toYaml . | trim | nindent 8 }}{{- end }}
+  {{- end }}
