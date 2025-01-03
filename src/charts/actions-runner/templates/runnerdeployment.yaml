@@ -7,9 +7,9 @@ we explicitly convert to boolean based on the string value */}}
 {{- $use_dockerconfig := eq (printf "%v" .Values.docker_config_json_enabled) "true" }}
 {{- $use_dind := eq (printf "%v" .Values.dind_enabled) "true" }}
 {{- /* Historically, the docker daemon was run in a sidecar.
-       At some point, the option became available to use dockerdWithinRunnerContainer,
-       and we now default to that. In fact, at this moment, the sidecar option is not configurable.
-       We keep the logic here in case we need to revert to the sidecar option. */}}
+      At some point, the option became available to use dockerdWithinRunnerContainer,
+      and we now default to that. In fact, at this moment, the sidecar option is not configurable.
+      We keep the logic here in case we need to revert to the sidecar option. */}}
 {{- $use_dind_in_runner := $use_dind }}
 {{- if $use_pvc }}
 ---
@@ -74,7 +74,7 @@ data:
     {
       "metadata": {
         "annotations":
-         {{- . | toJson | nindent 10 }}
+        {{- . | toJson | nindent 10 }}
       }
     }
     EOF
