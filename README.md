@@ -277,7 +277,7 @@ AWS_PROFILE=acme-mgmt-use2-auto-admin chamber write github_runners controller_gi
 ```
 
 2. If using the Webhook Driven autoscaling (recommended), generate a random string to use as the Secret when creating
-   the webhook in GitHub.
+  the webhook in GitHub.
 
 Generate the string using 1Password (no special characters, length 45) or by running
 

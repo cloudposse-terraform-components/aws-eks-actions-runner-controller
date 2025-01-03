@@ -11,7 +11,7 @@ output "metadata" {
         You may not set both values at the same time, but the following runners have both values set:
           ${join("\n  ", [for k, v in var.runners : k if v.webhook_startup_timeout != null && v.max_duration != null])}
 
-       EOT
+      EOT
   }
   precondition {
     condition = length([
@@ -22,7 +22,7 @@ output "metadata" {
         You may not set both values at the same time, but the following runners have both values set:
           ${join("\n  ", [for k, v in var.runners : k if v.storage != null && v.docker_storage != null])}
 
-       EOT
+      EOT
   }
 }
 
