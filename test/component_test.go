@@ -140,7 +140,6 @@ func (s *ComponentSuite) TestBasic() {
 	assert.NotNil(s.T(), runnerMetadata.Values)
 	assert.Equal(s.T(), runnerMetadata.Version, "0.3.2")
 
-
 	client := github.NewClient(nil).WithAuthToken(token)
 
 	runners, _, err := client.Actions.ListOrganizationRunners(context.Background(), githubOrg, nil)
