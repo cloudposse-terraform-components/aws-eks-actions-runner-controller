@@ -48,7 +48,7 @@ func (s *ComponentSuite) TestBasic() {
 
 	randomID := strings.ToLower(random.UniqueId())
 
-	namespace := fmt.Sprintf("acttions-runners-%s", randomID)
+	namespace := fmt.Sprintf("actions-runners-%s", randomID)
 	secretPathPrefix := fmt.Sprintf("test-%s", randomID)
 	secretGithubPATPath := fmt.Sprintf("/%s/token", secretPathPrefix)
 	secretWebhookPath := fmt.Sprintf("/%s/webhook", secretPathPrefix)
@@ -202,6 +202,10 @@ func (s *ComponentSuite) TestBasic() {
 			msg := "runner is not ready"
 			assert.Fail(s.T(), msg)
 	}
+
+
+	// Adding a 5 minutes sleep
+	time.Sleep(5 * time.Minute)
 
 	client := github.NewClient(nil).WithAuthToken(token)
 
