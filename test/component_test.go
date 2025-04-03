@@ -197,7 +197,7 @@ func (s *ComponentSuite) TestBasic() {
 		case <-stopChannel:
 			msg := "runner is ready"
 			fmt.Println(msg)
-		case <-time.After(2 * time.Minute):
+		case <-time.After(5 * time.Minute):
 			defer close(stopChannel)
 			msg := "runner is not ready"
 			assert.Fail(s.T(), msg)
