@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"os"
-	// "time"
+	"time"
 	"github.com/cloudposse/test-helpers/pkg/atmos"
 	"github.com/cloudposse/test-helpers/pkg/helm"
 	awsHelper "github.com/cloudposse/test-helpers/pkg/aws"
@@ -17,13 +17,13 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	// metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	// corev1 "k8s.io/api/core/v1"
-	// "k8s.io/apimachinery/pkg/runtime/schema"
-	// "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	// "k8s.io/client-go/dynamic"
-	// "k8s.io/client-go/dynamic/dynamicinformer"
-	// "k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/dynamic/dynamicinformer"
+	"k8s.io/client-go/tools/cache"
 )
 
 type ComponentSuite struct {
@@ -48,7 +48,7 @@ func (s *ComponentSuite) TestBasic() {
 
 	randomID := strings.ToLower(random.UniqueId())
 
-	namespace := fmt.Sprintf("external-secrets-%s", randomID)
+	namespace := fmt.Sprintf("actions-runners-%s", randomID)
 	secretPathPrefix := fmt.Sprintf("test-%s", randomID)
 	secretGithubPATPath := fmt.Sprintf("/%s/token", secretPathPrefix)
 	secretWebhookPath := fmt.Sprintf("/%s/webhook", secretPathPrefix)
@@ -140,6 +140,72 @@ func (s *ComponentSuite) TestBasic() {
 	assert.NotNil(s.T(), runnerMetadata.Values)
 	assert.Equal(s.T(), runnerMetadata.Version, "0.3.2")
 
+
+	config, err := awsHelper.NewK8SClientConfig(cluster)
+	assert.NoError(s.T(), err)
+	assert.NotNil(s.T(), config)
+
+	dynamicClient, err := dynamic.NewForConfig(config)
+	if err != nil {
+		panic(fmt.Errorf("failed to create dynamic client: %v", err))
+	}
+
+	// Define the GroupVersionResource for the Runners CRD
+	runnersGVR := schema.GroupVersionResource{
+		Group:    "actions.summerwind.dev",
+		Version:  "v1alpha1",
+		Resource: "runners",
+	}
+
+	factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(dynamicClient, time.Minute, corev1.NamespaceAll, nil)
+	informer := factory.ForResource(runnersGVR).Informer()
+
+	stopChannel := make(chan struct{})
+
+	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			runner := newObj.(*unstructured.Unstructured)
+
+			if !strings.HasPrefix(runner.GetName(), "infra-runner") || runner.GetNamespace() != namespace {
+				fmt.Printf("runner name is not 'infra-runner', it is '%s'\n", runner.GetName())
+				return
+			}
+
+			phase, found, err := unstructured.NestedString(runner.Object, "status", "phase")
+
+			if err != nil || !found {
+				fmt.Println("Error retrieving conditions from status phase")
+				return
+			}
+
+			ready, found, err := unstructured.NestedBool(runner.Object, "status", "ready")
+
+			if err != nil || !found {
+				fmt.Println("Error retrieving conditions from status ready")
+				return
+			}
+
+			if phase == "Running" && ready == true {
+				close(stopChannel) // Stop the informer if the external secret is ready
+			}
+		},
+	})
+
+	go informer.Run(stopChannel)
+
+	select {
+		case <-stopChannel:
+			msg := "runner is ready"
+			fmt.Println(msg)
+		case <-time.After(5 * time.Minute):
+			defer close(stopChannel)
+			msg := "runner is not ready"
+			assert.Fail(s.T(), msg)
+	}
+
+
+	// Adding a 5 minutes sleep
+	time.Sleep(5 * time.Minute)
 
 	client := github.NewClient(nil).WithAuthToken(token)
 
