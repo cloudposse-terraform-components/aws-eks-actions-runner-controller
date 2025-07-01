@@ -55,7 +55,7 @@ spec:
 
     - component: "eks/cert-manager"
       source: github.com/cloudposse-terraform-components/aws-eks-cert-manager.git//src?ref={{.Version}}
-      version: v1.535.1
+      version: v1.536.2
       targets:
         - "components/terraform/eks/cert-manager"
       included_paths:
