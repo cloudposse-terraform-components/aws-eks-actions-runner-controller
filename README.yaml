@@ -6,8 +6,7 @@ description: |-
   This component creates a Helm release for
   [actions-runner-controller](https://github.com/actions-runner-controller/actions-runner-controller) on an EKS cluster.
 
-  ## Usage
-
+usage: |-
   **Stack Level**: Regional
 
   Once the catalog file is created, the file can be imported as follows.
@@ -488,14 +487,22 @@ description: |-
   <!-- prettier-ignore-start -->
   <!-- prettier-ignore-end -->
 
-  ## References
-
-  - [cloudposse/terraform-aws-components](https://github.com/cloudposse/terraform-aws-components/tree/main/modules/eks/actions-runner-controller) -
-    Cloud Posse's upstream component
-  - [alb-controller](https://artifacthub.io/packages/helm/aws/aws-load-balancer-controller) - Helm Chart
-  - [alb-controller](https://github.com/kubernetes-sigs/aws-load-balancer-controller) - AWS Load Balancer Controller
-  - [actions-runner-controller Webhook Driven Scaling](https://github.com/actions-runner-controller/actions-runner-controller/blob/master/docs/detailed-docs.md#webhook-driven-scaling)
-  - [actions-runner-controller Chart Values](https://github.com/actions-runner-controller/actions-runner-controller/blob/master/charts/actions-runner-controller/values.yaml)
+references: 
+  - name: cloudposse-terraform-components
+    url: https://github.com/orgs/cloudposse-terraform-components/repositories
+    description: Cloud Posse's upstream component
+  - name: alb-controller
+    url: https://artifacthub.io/packages/helm/aws/aws-load-balancer-controller
+    description: Helm Chart
+  - name: alb-controller
+    url: https://github.com/kubernetes-sigs/aws-load-balancer-controller
+    description: AWS Load Balancer Controller
+  - name: actions-runner-controller Webhook Driven Scaling
+    url: https://github.com/actions-runner-controller/actions-runner-controller/blob/master/docs/detailed-docs.md#webhook-driven-scaling
+    description: 
+  - name: actions-runner-controller Chart Values
+    url: https://github.com/actions-runner-controller/actions-runner-controller/blob/master/charts/actions-runner-controller/values.yaml
+    description: 
 tags:
   - component/eks/actions-runner-controller
   - layer/github
